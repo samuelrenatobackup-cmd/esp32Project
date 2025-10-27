@@ -21,7 +21,6 @@ Bounce debouncerMenos = Bounce();
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
-// Canal PWM para ESP32
 const int canalPWM = 0;
 const int freqPWM = 5000;
 const int resolucaoPWM = 8;
@@ -30,7 +29,7 @@ void setup() {
   pinMode(led, OUTPUT);
   Serial.begin(9600);
 
-  // Configuração do PWM nativo do ESP32
+ 
   ledcSetup(canalPWM, freqPWM, resolucaoPWM);
   ledcAttachPin(led, canalPWM);
 
@@ -58,40 +57,37 @@ void loop() {
   debouncerMais.update();
   debouncerMenos.update();
 
-  // Aumentar brilho
+
   if (debouncerMais.fell()) {
     brilhoPorcentagem += 10;
     if (brilhoPorcentagem > 100) brilhoPorcentagem = 100;
     piscar = false;
   }
 
-  // Diminuir brilho
+
   if (debouncerMenos.fell()) {
     brilhoPorcentagem -= 10;
     if (brilhoPorcentagem < 0) brilhoPorcentagem = 0;
     piscar = false;
   }
 
-  // Segurar botão "mais" por 2 segundos -> ativa piscar
+  
   if (debouncerMais.read() == LOW && debouncerMais.currentDuration() >= 2000) {
     piscar = true;
   }
 
-  // Modo piscar
   if (piscar) {
-    // Desanexa o PWM para liberar controle do pino
-    ledcDetachPin(led);
+      ledcDetachPin(led);
     pinMode(led, OUTPUT);
     piscarLed();
   } 
   else {
-    // Reanexa PWM e ajusta brilho
     ledcAttachPin(led, canalPWM);
     brilhoPWM = map(brilhoPorcentagem, 0, 100, 0, 255);
     ledcWrite(canalPWM, brilhoPWM);
   }
 
-  // Atualiza LCD
+ 
   lcd.setCursor(0, 0);
   lcd.print("Brilho: ");
   lcd.print(brilhoPorcentagem);
